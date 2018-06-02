@@ -1,0 +1,154 @@
+---
+title: "Sentiment_Analysis"
+author: "Suhail AK"
+date: "June 2, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(twitteR)
+library(ROAuth)
+library(RCurl)
+library(dplyr)
+library(httr)
+library(tm)
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+library(ggplot2)
+library(stringr)
+library(plyr)
+```
+
+
+
+#Connecting to Twitter and Using Twitter API
+
+```{r}
+
+consumer_key <-"oe3dWoeYBEtSZKajHPFI8XGvl"
+consumer_secret <-"yFPrN5NLrxJ9Ht1GOQVhQSZvrSFWryeCPa6MnFmRrTlUnypVbw"
+access_key <- "575294356-KYJZMFVdZ76SVHEfZnXQj31donfiSNFlXzyJPvvl"
+access_secret <- "stZ6hCS8niyA0woRk1UOquuXW6o26m8ovD0aOEIeUxuNk"
+
+
+setup_twitter_oauth(consumer_key,consumer_secret,access_key,access_secret)
+
+gst <- searchTwitter("#UCLfinal",n=1000,lang = "en")
+
+
+class(gst)
+bm <- twListToDF(gst)
+
+
+
+```
+
+#importing positive and negative words
+
+```{r}
+pos <- read.delim("C:/Users/Administrator/Documents/datavisualization/sentiment_analysis/positive-words.txt")
+colnames(pos) <- "wordlist"
+
+
+
+neg <- read.delim("C:/Users/Administrator/Documents/datavisualization/sentiment_analysis/negative-words.txt")
+colnames(neg) <- "wordlist"
+
+
+sentences <- bm$text
+
+```
+
+
+
+#word cloud
+
+
+```{r}
+
+sentences = gsub('[^A-z ]','', sentences)
+sentences = tolower(sentences)
+word_list = str_split(sentences, '\\s+')
+words = unlist(word_list)
+length(words)
+
+
+# freq_words <- Corpus(VectorSource(words))
+# summary(freq_words)
+# as.character(freq_words = tm_map(freq_words, removeWords, stopwords("english")))
+
+
+tab <- table(words)
+tabdf <- as.data.frame(tab)
+tab2 <- tabdf %>% arrange(-Freq)
+dim(tab2)
+val <- stopwords()
+tab3 <- tab2 %>% filter(!words %in% val)
+
+#top_ten most tweeted words
+View(tab3)
+tab3 %>% head(10) %>%  ggplot(aes(x = reorder(words,-Freq),y = Freq))+geom_bar(stat = "identity",fill="navyblue")+xlab("Words")+theme_bw()
+
+
+
+
+#wordcloud
+wordcloud (words=tab3$words,freq=tab3$Freq,min.freq=1,max.words=80, colors=brewer.pal(8, "Dark2"))
+
+
+```
+
+
+#sentiment score function
+
+```{r}
+score_sentiment = function(sentences, pos, neg, .progress='none')
+  {
+    scores = laply(sentences, function(sentences, pos , neg) {
+      sentences = gsub('[^A-z ]','', sentences)
+      sentences = tolower(sentences)
+      word_list = str_split(sentences, '\\s+')
+      words = unlist(word_list)
+      pos_matches = match(words, pos)
+      neg_matches = match(words, neg)
+      pos_matches = !is.na(pos_matches)
+      neg_matches = !is.na(neg_matches)
+      score = sum(pos_matches) - sum(neg_matches)
+      return(score)
+    }, pos, neg, .progress=.progress )
+    scores_df = data.frame(score=scores, text=sentences)
+    return(scores_df)
+}
+
+
+scores_df <- score_sentiment(sentences,pos$wordlist,neg$wordlist)
+
+View(scores_df)
+scores_df$emotion <- ifelse(scores_df$score > 0,1,ifelse(scores_df$score<0,-1,0))
+
+
+# Number of Positive Reactions on Real Madrids Victory
+sum(scores_df$score > 0)
+
+
+# Number of Negative Reactions on Liverpools loss
+sum(scores_df$score < 0)
+
+
+# Neutral reactions on Twitter
+sum(scores_df$score == 0)
+
+
+hist(scores_df$score)
+
+
+```
+
+
+
+
+
+
