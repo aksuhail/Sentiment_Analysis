@@ -28,10 +28,10 @@ library(plyr)
 
 ```{r}
 
-consumer_key <-"oe3dWoeYBEtSZKajHPFI8XGvl"
-consumer_secret <-"yFPrN5NLrxJ9Ht1GOQVhQSZvrSFWryeCPa6MnFmRrTlUnypVbw"
-access_key <- "575294356-KYJZMFVdZ76SVHEfZnXQj31donfiSNFlXzyJPvvl"
-access_secret <- "stZ6hCS8niyA0woRk1UOquuXW6o26m8ovD0aOEIeUxuNk"
+consumer_key <-"oe3dffcghgfghfhgghPFI8XGvl"
+consumer_secret <-"yFPrdfhggjhhjjkhbjhgkgjhghjghfVhQSZvrSFWryeCPa6MnFmRrTlUnypVbw"
+access_key <- "5752ghfhgfgjhghghfhkSNFlXzyJPvvl"
+access_secret <- "stZ6hCS8nidffsfhgfjhgiuivfxdxghfjhhkjhUxuNk"
 
 
 setup_twitter_oauth(consumer_key,consumer_secret,access_key,access_secret)
